@@ -1,0 +1,32 @@
+version: v1
+
+appsettings:
+  - name: "WEBUI_AUTH"
+    value: "false"
+  
+  - name: "OPENAI_API_BASE_URL"
+    value: "http://localhost:11434/v1"
+
+  - name: "SLM_PORT"
+    value: "11434"
+
+# connectionStrings:
+
+containers:
+  # by default all environment variables are passed to main container.
+  - name: "main"
+    image: "ghcr.io/open-webui/open-webui:main"
+    targetPort: "8080"
+    isMain: true
+    authType: Anonymous
+
+  - name: "slm"
+    image: "demoacr.azurecr.io/phi-4-mini-instruct-q4_0:v6"
+    targetPort: "11434"
+    isMain: false
+    authType: UserCredential
+    userName: ${ACR_USERNAME}
+    passwordSecret: ${ACR_PASSWORD}
+    environmentVariables:
+      - name: "SLM_PORT"
+        value: "SLM_PORT"
