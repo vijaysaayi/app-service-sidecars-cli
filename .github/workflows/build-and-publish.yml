@@ -39,7 +39,7 @@ jobs:
           --output ./publish/${{ matrix.os }}
 
     - name: Upload artifact
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v2
       with:
         name: AppServiceSidecars-${{ matrix.os }}
         path: ./publish/${{ matrix.os }}
