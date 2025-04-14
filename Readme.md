@@ -4,6 +4,17 @@
 
 The AppService Sidecars CLI is a tool designed to manage sidecar configurations and operations for AppService environments. It provides commands to bring up sidecars, bring them down, and view logs.
 
+## Installation Steps
+
+From the releases page, download the latest version of the CLI.
+- https://github.com/vijaysaayi/app-service-sidecars-cli/releases
+
+For Linux, update the permissions to ensure it has execute permissions.
+
+```bash
+chmod +x appservice-sidecars
+```
+
 ## Commands
 
 ### 1. `up`
@@ -11,7 +22,7 @@ The AppService Sidecars CLI is a tool designed to manage sidecar configurations 
 The `up` command is used to spin up all containers defined in sidecars.yaml configuration file.
 
 ```bash
-AppServiceSidecarsCli up --env .\.env --config-path .\sidecars.yaml  
+appservice-sidecars.exe up --env .\.env --config-path .\sidecars.yaml  
 ```
 
 ### 2. `down`
@@ -19,7 +30,7 @@ AppServiceSidecarsCli up --env .\.env --config-path .\sidecars.yaml
 The `down` command stops and removes the sidecars that were started using the `up` command.
 
 ```bash
-AppServiceSidecarsCli down
+appservice-sidecars.exe down
 ```
 
 - Stops and removes the Docker containers associated with the sidecars.
@@ -29,7 +40,7 @@ AppServiceSidecarsCli down
 The `logs` command displays logs from the running sidecars.
 
 ```bash
-AppServiceSidecarsCli logs <containerName>
+appservice-sidecars.exe logs <containerName>
 ```
 
 - Retrieves logs from the Docker containers associated with the sidecars.
@@ -71,6 +82,13 @@ containers:
     environmentVariables:
       - name: "SLM_PORT"
         value: "SLM_PORT"
+```
+
+You can also pass a `.env` file to the supported commands which will automatically replace variables in `sidecars.yaml`
+
+```bash
+ACR_USERNAME="your-acr-username"
+ACR_PASSWORD="your-acr-password"
 ```
 
 ## Contributing
