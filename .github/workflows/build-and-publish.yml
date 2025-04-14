@@ -37,9 +37,9 @@ jobs:
           --runtime ${{ matrix.os == 'ubuntu-latest' && 'linux-x64' || 'win-x64' }} \
           --self-contained true \
           --output ./publish/${{ matrix.os }}
-
+   
     - name: Upload artifact
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4.6.2
       with:
         name: AppServiceSidecars-${{ matrix.os }}
         path: ./publish/${{ matrix.os }}
