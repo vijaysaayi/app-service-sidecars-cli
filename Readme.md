@@ -8,14 +8,11 @@ The AppService Sidecars CLI is a tool designed to manage sidecar configurations 
 
 ### 1. `up`
 
-The `up` command is used to start the sidecars defined in the `sidecars.yaml` configuration file.
+The `up` command is used to spin up all containers defined in sidecars.yaml configuration file.
 
 ```bash
-AppServiceSidecarsCli up
+AppServiceSidecarsCli up --env .\.env --config-path .\sidecars.yaml  
 ```
-
-- Reads the `sidecars.yaml` file located in the `sample/` directory.
-- Starts the sidecars using Docker.
 
 ### 2. `down`
 
@@ -29,17 +26,17 @@ AppServiceSidecarsCli down
 
 ### 3. `logs`
 
-The `logs` command fetches and displays logs from the running sidecars.
+The `logs` command displays logs from the running sidecars.
 
 ```bash
-AppServiceSidecarsCli logs
+AppServiceSidecarsCli logs <containerName>
 ```
 
 - Retrieves logs from the Docker containers associated with the sidecars.
 
 ## Configuration
 
-The CLI uses a `sidecars.yaml` file to define the sidecar configurations. Ensure that this file is present in the `sample/` directory and is correctly configured before running the commands.
+The CLI uses a `sidecars.yaml` file to define the sidecar configurations. 
 
 ### Example `sidecars.yaml`:
 
