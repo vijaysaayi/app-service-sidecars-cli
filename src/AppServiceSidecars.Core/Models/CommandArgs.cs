@@ -15,4 +15,6 @@ public record CommandArgs
     public CancellationToken CancellationToken { get; init; } = default;
 
     public bool LogToConsole { get; init; } = true;
+
+    public string? WorkingDirectory { get; set; }
 }

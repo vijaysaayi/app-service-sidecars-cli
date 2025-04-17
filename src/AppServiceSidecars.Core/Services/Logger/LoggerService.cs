@@ -18,4 +18,25 @@ public class LoggerService
     {
         AnsiConsole.MarkupLine($"[red]{Markup.Escape(message)}[/]");
     }
+
+    public static void DisplayBox(string message)
+    {
+        var text = new Text(message, new Style(Color.White))
+        {
+            Justification = Justify.Center
+        };
+
+        var panel = new Panel(text)
+        {
+            Border = BoxBorder.Ascii,
+            Expand = true
+        };
+
+        AnsiConsole.Write(panel);
+    }
+
+    public static void AddNewLine()
+    {
+        AnsiConsole.WriteLine();
+    }
 }

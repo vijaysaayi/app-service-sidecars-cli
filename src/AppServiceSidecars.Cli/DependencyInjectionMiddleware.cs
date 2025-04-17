@@ -5,6 +5,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using AppServiceSidecars.Core.Services.Docker;
+using AppServiceSidecars.Core.Services.Logger;
 
 namespace AppServiceSidecarsCli;
 
@@ -42,6 +44,26 @@ internal static class DependencyInjectionMiddleware
                 // Enable support for "context.BindingContext.GetServices<>()" as in the modern dependency injection
                 var enumerableServiceType = typeof(IEnumerable<>).MakeGenericType(serviceType);
                 context.BindingContext.AddService(enumerableServiceType, _ => serviceProvider.GetServices(serviceType));
+            }
+
+            await next(context);
+        });
+    }
+}
+
+internal static class  PreRequisitesCheckerMiddleware
+{
+    public static CommandLineBuilder AddPrerequisitesCheckerMiddleware(this CommandLineBuilder builder)
+    {
+        return builder.AddMiddleware(async (context, next) =>
+        {
+            var dockerService = context.BindingContext.GetRequiredService<IDockerService>();
+            if (!await dockerService.IsDockerRunning())
+            {
+                LoggerService.Error("Sidecars CLI has the following dependencies.");
+                LoggerService.Error("- Docker must be installed and running.");                
+
+                return;
             }
 
             await next(context);

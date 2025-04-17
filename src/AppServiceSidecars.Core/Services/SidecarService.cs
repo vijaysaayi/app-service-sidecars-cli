@@ -2,6 +2,7 @@ using AppServiceSidecars.Core.Models;
 using AppServiceSidecars.Core.Services.Docker;
 using AppServiceSidecars.Core.Services.Logger;
 using AppServiceSidecars.Core.Services.Utils;
+using System.ComponentModel;
 
 namespace AppServiceSidecars.Core.Services;
 
@@ -18,14 +19,16 @@ public class SidecarService : ISidecarService
 
         foreach (var container in config.Containers)
         {
+            LoggerService.DisplayBox($"Spinning up container: {container.Name}");
+
             if (container.AuthType.Equals("UserCredential", StringComparison.OrdinalIgnoreCase))
             {
-                LoggerService.Info($"Container {container.Name} uses an Image that needs login");
+                LoggerService.Info($"- Container {container.Name} uses an Image that needs login");
 
                 var registry = container.Image.Split('/')[0];
                 await _dockerService.LoginToRegistryAsync(registry, container.UserName, container.PasswordSecret, CancellationToken.None);
 
-                LoggerService.Info($"Successfully logged in to registry : {registry}\n");
+                LoggerService.AddNewLine();
             }
 
             await _dockerService.RunContainerAsync(config.GetDockerRunCommandArgs(container.Name), CancellationToken.None);
@@ -38,7 +41,8 @@ public class SidecarService : ISidecarService
 
         if (containers.Length != 0)
         {
-            LoggerService.Info($"Detected {containers.Length} running containers. Stopping and removing them.");
+            LoggerService.DisplayBox($"Tear down previously running containers");
+            LoggerService.Info($"- Detected {containers.Length} running containers. Stopping and removing them.");
         }
 
         foreach (var container in containers)
@@ -58,8 +62,7 @@ public class SidecarService : ISidecarService
             Since = since,
             Until = until,
             Tail = tail,
-            Timestamps = timestamps,
-            ContainerName = containerName
+            Timestamps = timestamps
         };
 
         using var cts = new CancellationTokenSource();
@@ -73,19 +76,7 @@ public class SidecarService : ISidecarService
 
         if (!string.IsNullOrWhiteSpace(containerName))
         {
-            await _dockerService.GetContainerLogsAsync(options, cts.Token)
-                .ContinueWith(task =>
-                {
-                    if (task.IsFaulted)
-                    {
-                        LoggerService.Error($"Failed to fetch logs for container {containerName}: {task.Exception?.Message}");
-                    }
-                    else
-                    {
-                        LoggerService.Info($"--- Logs for container {containerName} ---");
-                        LoggerService.Info(task.Result);
-                    }
-                }, TaskContinuationOptions.OnlyOnRanToCompletion);
+            await _dockerService.GetContainerLogsAsync(containerName, options, cts.Token);
         }
         else
         {
@@ -97,24 +88,24 @@ public class SidecarService : ISidecarService
             {
                 LoggerService.Info($"--- Logs for container {container} ---");
 
-                options = options with { ContainerName = container };
-
-                tasks.Add(_dockerService.GetContainerLogsAsync(options, cts.Token)
-                    .ContinueWith(task =>
-                    {
-                        if (task.IsFaulted)
-                        {
-                            LoggerService.Error($"Failed to fetch logs for container {container}: {task.Exception?.Message}");
-                        }
-                        else
-                        {
-                            LoggerService.Info(task.Result);
-                        }
-                    }, TaskContinuationOptions.OnlyOnRanToCompletion));
+                tasks.Add(_dockerService.GetContainerLogsAsync(container, options, cts.Token));
             }
 
             try { await Task.WhenAll(tasks); }
             catch (OperationCanceledException) { /* Expected on Ctrl+C */ }
         }
+    }
+
+    public async Task BuildImageAsync(string context, string dockerfile, Dictionary<string, string> buildArgs, string imageName)
+    {
+        LoggerService.Info($"Building image {imageName} from context {context} and Dockerfile {dockerfile}");
+
+        await _dockerService.BuildImageAsync(new DockerBuildCommandParams
+        {
+            BuildContext = context,
+            DockerfilePath = dockerfile,
+            BuildArgs = buildArgs,
+            ImageName = imageName
+        }, CancellationToken.None);
     }
 }

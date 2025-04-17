@@ -1,9 +1,76 @@
 using AppServiceSidecars.Core.Models;
+using AppServiceSidecars.Core.Services.Logger;
 
 namespace AppServiceSidecars.Core.Services.Utils;
 
 public static class SidecarConfigValidator
 {
+    public static bool TryValidateBuildConfig(this SidecarsConfig config, string configDirectory, out SidecarConfigValidationException? exception)
+    {
+        var errors = new List<string>();
+        exception = null;
+
+        var numcontainersToBuild = config.Containers.Count(c => c.Build != null);
+
+        if (numcontainersToBuild == 0)
+        {
+            errors.Add("No containers have a build configuration specified.");
+            exception = new SidecarConfigValidationException(errors.ToArray());
+            return false;
+        }
+
+        // for every container, check if the build property is set
+        foreach (var container in config.Containers)
+        {
+            if (container.Build != null)
+            {
+                // check if the build context is set
+                if (string.IsNullOrWhiteSpace(container.Build.Context))
+                {
+                    errors.Add($"Container '{container.Name}' has a build configuration but no context is set.");
+                }
+
+                var contextPath = container.Build.Context;
+
+                if (contextPath.StartsWith('.'))
+                {
+                    // if the context is relative, make it absolute
+                    contextPath = Path.Combine(configDirectory, contextPath);
+                }
+
+                if (!Directory.Exists(contextPath))
+                {
+                    errors.Add($"Container '{container.Name}' has a build configuration but the context '{contextPath}' does not exist.");
+                }
+
+                // check if the dockerfile is set
+                if (string.IsNullOrWhiteSpace(container.Build.Dockerfile))
+                {
+                    errors.Add($"Container '{container.Name}' has a build configuration but no dockerfile is set.");
+                }
+
+                // docker file should exists in the context
+                var dockerfilePath = Path.Combine(contextPath, container.Build.Dockerfile);
+
+                if (!File.Exists(dockerfilePath))
+                {
+                    errors.Add($"Container '{container.Name}' has a build configuration but the dockerfile '{dockerfilePath}' does not exist.");
+                }
+            }
+            else
+            {
+                LoggerService.Warning($"- Container '{container.Name}' does not have a build configuration. Skipping build.");
+            }
+        }
+
+        if (errors.Count != 0)
+        {
+            exception = new SidecarConfigValidationException(errors.ToArray());
+        }
+
+        return true;
+    }
+
     public static bool TryValidate(this SidecarsConfig config, out SidecarConfigValidationException? exception)
     {
         var errors = new List<string>();

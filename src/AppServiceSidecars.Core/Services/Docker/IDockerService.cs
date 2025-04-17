@@ -4,7 +4,7 @@ namespace AppServiceSidecars.Core.Services.Docker
 {
     public interface IDockerService
     {
-        Task<string> GetContainerLogsAsync(DockerLogsCommandParams commandParams, CancellationToken cancellationToken);
+        Task<string> GetContainerLogsAsync(string containerName, DockerLogsCommandParams commandParams, CancellationToken cancellationToken);
 
         Task<bool> IsDockerRunning();
 
@@ -15,5 +15,7 @@ namespace AppServiceSidecars.Core.Services.Docker
         Task RunContainerAsync(DockerRunCommandParams runCommandParams, CancellationToken cancellationToken);
 
         Task<bool> LoginToRegistryAsync(string registry, string username, string password, CancellationToken cancellationToken);
+
+        Task BuildImageAsync(DockerBuildCommandParams commandParams, CancellationToken cancellationToken);
     }
 }

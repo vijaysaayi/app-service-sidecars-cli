@@ -17,11 +17,11 @@ public class LogsCommand : Command<LogsCommandOptions, LogsCommandOptionsHandler
     {
         this.AddArgument(new Argument<string>("containerName", () => string.Empty, "Container name to fetch logs for (leave blank to fetch logs for all containers)"));
 
-        this.AddOption(new Option<bool>("-f", "Follow logs"));
+        this.AddOption(new Option<bool>("--follow", "Follow logs"));
         this.AddOption(new Option<string>("--since", "Show logs since timestamp"));
         this.AddOption(new Option<string>("--until", "Show logs until a timestamp"));
         this.AddOption(new Option<int>("--tail", () => 0, "Number of lines from the end of logs (0 means all)"));
-        this.AddOption(new Option<bool>("-t", "Show timestamps"));
+        this.AddOption(new Option<bool>("--timestamps", "Show timestamps"));
         this.AddOption(new Option<bool>("--debug", "Enable verbose debug logging"));
     }
 }

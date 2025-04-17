@@ -20,7 +20,10 @@ public class CommandExecutorService
             RedirectStandardOutput = true,
             RedirectStandardError = true,
             UseShellExecute = false,
-            CreateNoWindow = true
+            CreateNoWindow = true,
+            StandardOutputEncoding = Encoding.UTF8,
+            StandardErrorEncoding = Encoding.UTF8,
+            WorkingDirectory = args.WorkingDirectory ?? Directory.GetCurrentDirectory(),
         };
 
         using var process = new Process { StartInfo = psi, EnableRaisingEvents = true };
@@ -30,7 +33,7 @@ public class CommandExecutorService
         using (cancellationToken.Register(() => { if (!process.HasExited) TryKillProcess(process); }))
         {
             process.OutputDataReceived += (sender, e) => HandleOutput(e.Data, args, outputBuilder, LoggerService.Info);
-            process.ErrorDataReceived += (sender, e) => HandleOutput(e.Data, args, errorBuilder, LoggerService.Error);
+            process.ErrorDataReceived += (sender, e) => HandleOutput(e.Data, args, errorBuilder, LoggerService.Info);
 
             var tcs = new TaskCompletionSource<bool>();
             process.Exited += (sender, e) => tcs.TrySetResult(true);
@@ -51,7 +54,7 @@ public class CommandExecutorService
         }
     }
 
-    private void HandleOutput(string? data, CommandArgs args, StringBuilder outputBuilder, Action<string> logAction)
+    private static void HandleOutput(string? data, CommandArgs args, StringBuilder builder, Action<string> logAction)
     {
         if (data == null) return;
 
@@ -65,7 +68,7 @@ public class CommandExecutorService
 
         if (args.CaptureOutput)
         {
-            outputBuilder.AppendLine(outputLine);
+            builder.AppendLine(outputLine);
         }
     }
 

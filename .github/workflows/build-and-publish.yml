@@ -4,9 +4,16 @@ on:
   push:
     branches:
       - main
+    paths:
+      - 'src/**'
+      - '!src/AppServiceSidecars.Core.Tests/**'
+      
   pull_request:
     branches:
       - main
+    paths:
+      - 'src/**'
+      - '!src/AppServiceSidecars.Core.Tests/**'
 
 jobs:
   build:
@@ -32,8 +39,12 @@ jobs:
 
     - name: Publish executables
       run: |
-        dotnet publish src/AppServiceSidecars.Cli/AppServiceSidecarsCli.csproj --configuration Release --runtime ${{ matrix.os == 'ubuntu-latest' && 'linux-x64' || 'win-x64' }} --self-contained true  --output ./publish/${{ matrix.os }}
-   
+        dotnet publish src/AppServiceSidecars.Cli/AppServiceSidecarsCli.csproj \
+          --configuration Release \
+          --runtime ${{ matrix.os == 'ubuntu-latest' && 'linux-x64' || 'win-x64' }} \
+          --self-contained true \
+          --output ./publish/${{ matrix.os }}
+
     - name: Upload artifact
       uses: actions/upload-artifact@v4.6.2
       with:

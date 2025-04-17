@@ -30,7 +30,13 @@ public class DockerCommandGeneratorTests
             SourcePort = 8080,
             TargetPort = 80,
             EnvironmentVariables = new Dictionary<string, string> { { "ENV_VAR", "value" } },
-            VolumeMounts = new Dictionary<string, string> { { "/host/path", "/container/path" } },
+            VolumeMounts = [
+                new DockerRunVolumeMountParams
+                {
+                    VolumeSubPath = "/host/path",
+                    ContainerMountPath = "/container/path",
+                    IsReadOnly = false
+                }] ,
             Image = "myimage",
             StartupCommand = "mycommand"
         };
@@ -52,12 +58,11 @@ public class DockerCommandGeneratorTests
             Since = "2023-01-01T00:00:00",
             Until = "2023-01-02T00:00:00",
             Tail = 100,
-            Timestamps = true,
-            ContainerName = "mycontainer"
+            Timestamps = true
         };
 
         // Act
-        var command = DockerCommandGenerator.GenerateCommandToFetchLogs(options);
+        var command = DockerCommandGenerator.GenerateCommandToFetchLogs("mycontainer", options);
 
         // Assert
         Assert.Equal(" logs  --follow --since 2023-01-01T00:00:00 --until 2023-01-02T00:00:00 --tail 100 --timestamps mycontainer", command);

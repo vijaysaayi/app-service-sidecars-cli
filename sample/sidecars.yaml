@@ -20,6 +20,12 @@ containers:
     isMain: true
     authType: Anonymous
 
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        - "Test=${Value}"
+
   - name: "slm"
     image: "demoacr.azurecr.io/phi-4-mini-instruct-q4_0:v6"
     targetPort: "11434"
@@ -30,3 +36,9 @@ containers:
     environmentVariables:
       - name: "SLM_PORT"
         value: "SLM_PORT"
+
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        - "Test=${Value}"

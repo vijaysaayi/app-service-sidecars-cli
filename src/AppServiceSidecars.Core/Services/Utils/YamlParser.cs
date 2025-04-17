@@ -43,6 +43,9 @@ public static class YamlParser
                 .IgnoreUnmatchedProperties()
                 .Build();
 
+            // If a file path contains \ , replace it with /
+            processedContent = processedContent.Replace("\\", "/");
+
             return deserializer.Deserialize<T>(processedContent) ?? new T();
         }
         catch (Exception ex)

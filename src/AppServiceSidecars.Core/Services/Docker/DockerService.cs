@@ -1,10 +1,11 @@
 ﻿using AppServiceSidecars.Core.Models;
 using AppServiceSidecars.Core.Services.CommandExecutor;
 using AppServiceSidecars.Core.Services.Logger;
+using System.Text.RegularExpressions;
 
 namespace AppServiceSidecars.Core.Services.Docker;
 
-public class DockerService : IDockerService
+public partial class DockerService : IDockerService
 {
     private readonly CommandExecutorService _commandExecutor;
 
@@ -20,12 +21,13 @@ public class DockerService : IDockerService
             await _commandExecutor.ExecuteCommandAsync(new CommandArgs
             {
                 Arguments = "info",
-                CaptureOutput = true
+                CaptureOutput = true,
+                LogToConsole = false
             }, CancellationToken.None);
 
             return true;
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             return false;
         }
@@ -53,10 +55,12 @@ public class DockerService : IDockerService
             LogToConsole = false
         };
 
-        LoggerService.Info($"Running container with command: {args.Arguments}");
+        var sanitizedArgs = SanitizeEnvironmentVariablesRegex().Replace(args.Arguments, "-e $1=****");
+
+        LoggerService.Info($"- Running container with command:\n  docker {sanitizedArgs}");
         await _commandExecutor.ExecuteCommandAsync(args, cancellationToken);
 
-        LoggerService.Info($"Container {runCommandParams.ContainerName} started successfully.\n");
+        LoggerService.Info($"\n :check_mark_button: Container {runCommandParams.ContainerName} started successfully.\n");
     }
 
     public async Task<bool> RemoveContainerAsync(string containerName, CancellationToken cancellationToken)
@@ -73,12 +77,15 @@ public class DockerService : IDockerService
         return !string.IsNullOrWhiteSpace(output);
     }
 
-    public async Task<string> GetContainerLogsAsync(DockerLogsCommandParams commandParams, CancellationToken cancellationToken)
+    public async Task<string> GetContainerLogsAsync(string containerName, DockerLogsCommandParams commandParams, CancellationToken cancellationToken)
     {
         var args = new CommandArgs
         {
-            Arguments = DockerCommandGenerator.GenerateCommandToFetchLogs(commandParams),
-            CaptureOutput = true
+            Arguments = DockerCommandGenerator.GenerateCommandToFetchLogs(containerName, commandParams),
+            CaptureOutput = false,
+            LogToConsole = true,
+            LogPrefix = $"container : {containerName}",
+            ShouldIncludeTimestamp = false
         };
 
         return await _commandExecutor.ExecuteCommandAsync(args, cancellationToken);
@@ -89,6 +96,7 @@ public class DockerService : IDockerService
         var args = new CommandArgs
         {
             Arguments = DockerCommandGenerator.GenerateLoginCommand(registry, username, password),
+            LogToConsole = false,
             CaptureOutput = true
         };
 
@@ -97,13 +105,37 @@ public class DockerService : IDockerService
             {
                 if (task.IsFaulted)
                 {
-                    LoggerService.Error($"Failed to login to Docker registry: {task.Exception?.Message}");
+                    LoggerService.Error($"- Failed to login to Docker registry: {task.Exception?.Message}");
                     return false;
                 }
 
                 var output = task.Result;
-                return output.Contains("Login Succeeded", StringComparison.OrdinalIgnoreCase);
+                return output.Contains("- Login Succeeded", StringComparison.OrdinalIgnoreCase);
 
             }, cancellationToken);
     }
+
+    public async Task BuildImageAsync(DockerBuildCommandParams commandParams, CancellationToken cancellationToken)
+    {
+        var command = DockerCommandGenerator.GetBuildCommand(commandParams);
+
+        LoggerService.Info($"- Building image with command:\n  docker {command}");
+
+        var commandArgs = new CommandArgs
+        {
+            Arguments = command,
+            CaptureOutput = false,
+            LogToConsole = true
+        };
+
+        await _commandExecutor.ExecuteCommandAsync(commandArgs, cancellationToken);
+    }
+
+    /// <summary>
+    /// A regex pattern to match and sanitize Docker environment variable arguments.
+    /// This pattern identifies arguments in the format `-e <env_var_name>=<env_var_value>`
+    /// and captures the environment variable name (<env_var_name>) for replacement.
+    /// </summary>
+    [GeneratedRegex(@"-e\s+(\w+)=\S+")]
+    private static partial Regex SanitizeEnvironmentVariablesRegex();
 }

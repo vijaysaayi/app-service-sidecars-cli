@@ -2,44 +2,65 @@
 
 ## Overview
 
-The AppService Sidecars CLI is a tool designed to manage sidecar configurations and operations for AppService environments. It provides commands to bring up sidecars, bring them down, and view logs.
+The AppService Sidecars CLI provides a seamless local developer experience for managing AppService sidecars. It offers commands to build containers, spin them up, and tear them down. The tool is designed with simplicity in mind, keeping the schema of sidecars.yaml closely aligned with docker-compose.yaml—while only incorporating features supported by App Services.
+
+## Installation Steps
+
+From the releases page, download the latest version of the CLI.
+
+- [AppService Sidecars CLI Releases](https://github.com/vijaysaayi/app-service-sidecars-cli/releases)
+
+For Linux, update the permissions to ensure it has execute permissions.
+
+```bash
+chmod +x appservice-sidecars
+```
 
 ## Commands
 
 ### 1. `up`
 
-The `up` command is used to start the sidecars defined in the `sidecars.yaml` configuration file.
+The `up` command is used to spin up all containers defined in sidecars.yaml configuration file.
 
 ```bash
-AppServiceSidecarsCli up
+appservice-sidecars.exe up .\sidecars.yaml  --env .\.env
 ```
 
-- Reads the `sidecars.yaml` file located in the `sample/` directory.
-- Starts the sidecars using Docker.
+![Up Command Output](imgs/up-command-output.png)
 
 ### 2. `down`
 
 The `down` command stops and removes the sidecars that were started using the `up` command.
 
 ```bash
-AppServiceSidecarsCli down
+appservice-sidecars.exe down
 ```
 
 - Stops and removes the Docker containers associated with the sidecars.
 
 ### 3. `logs`
 
-The `logs` command fetches and displays logs from the running sidecars.
+The `logs` command displays logs from the running sidecars.
 
 ```bash
-AppServiceSidecarsCli logs
+appservice-sidecars.exe logs <containerName>
 ```
 
 - Retrieves logs from the Docker containers associated with the sidecars.
 
+### 4. `build`
+
+The `build` command builds all containers specified in `sidecars.yaml`.
+
+```bash
+appservice-sidecars.exe build .\sidecars.yaml  --env .\.env
+```
+
+![Build Command Output](imgs/build-command-output.png)
+
 ## Configuration
 
-The CLI uses a `sidecars.yaml` file to define the sidecar configurations. Ensure that this file is present in the `sample/` directory and is correctly configured before running the commands.
+The CLI uses a `sidecars.yaml` file to define the sidecar configurations. 
 
 ### Example `sidecars.yaml`:
 
@@ -64,6 +85,10 @@ containers:
     isMain: true
     authType: Anonymous
 
+    build:
+      dockerfile: src\main\Dockerfile
+      context: .
+
   - name: "slm"
     image: "demoacr.azurecr.io/phi-4-mini-instruct-q4_0:v6"
     targetPort: "11434"
@@ -74,6 +99,19 @@ containers:
     environmentVariables:
       - name: "SLM_PORT"
         value: "SLM_PORT"
+
+    build:
+      dockerfile: src\slm\Dockerfile
+      context: .
+      args:
+        - test: ${VALUE}
+```
+
+You can also pass a `.env` file to the supported commands which will automatically replace variables in `sidecars.yaml`
+
+```bash
+ACR_USERNAME="your-acr-username"
+ACR_PASSWORD="your-acr-password"
 ```
 
 ## Contributing

@@ -7,6 +7,9 @@ public record SidecarsConfig
     [YamlMember(Alias = "version")]
     public string Version { get; set; } = "1.0";
 
+    [YamlMember(Alias = "name")]
+    public string Name { get; set; } = string.Empty;
+
     [YamlMember(Alias = "appsettings")]
     public AppSetting[] AppSettings { get; set; } = [];
     
@@ -48,6 +51,12 @@ public record Container
 
     [YamlMember(Alias = "environmentVariables")]
     public EnvironmentVariable[] EnvironmentVariables { get; set; } = [];
+
+    [YamlMember(Alias = "volumeMounts")]
+    public VolumeMount[] VolumeMounts { get; set; } = [];
+
+    [YamlMember(Alias = "build")]
+    public BuildConfig? Build { get; set; }
 }
 
 public record EnvironmentVariable
@@ -57,4 +66,31 @@ public record EnvironmentVariable
 
     [YamlMember(Alias = "value")]
     public string Value { get; set; } = string.Empty;
+}
+
+public record VolumeMount
+{
+    [YamlMember(Alias = "volumeSubPath")]
+    public string VolumeSubPath { get; set; } = string.Empty;
+
+    [YamlMember(Alias = "containerMountPath")]
+    public string ContainerMountPath { get; set; } = string.Empty;
+
+    [YamlMember(Alias = "data")]
+    public string Data { get; set; } = string.Empty;
+
+    [YamlMember(Alias = "readOnly")]
+    public bool ReadOnly { get; set; } = false;
+}
+
+public class BuildConfig
+{
+    [YamlMember(Alias = "context")]
+    public string Context { get; set; } = string.Empty;
+
+    [YamlMember(Alias = "dockerfile")]
+    public string Dockerfile { get; set; } = string.Empty;
+
+    [YamlMember(Alias = "args")]
+    public Dictionary<string, string> Args { get; set; } = new();
 }
