@@ -5,9 +5,10 @@ on:
     branches:
       - main
     paths:
+      - '.github/workflows/build-and-publish.yml'
       - 'src/**'
       - '!src/AppServiceSidecars.Core.Tests/**'
-      
+
   pull_request:
     branches:
       - main
@@ -38,6 +39,7 @@ jobs:
       run: dotnet build src/AppServiceSidecars.sln --configuration Release
 
     - name: Publish executables
+      shell: bash
       run: |
         dotnet publish src/AppServiceSidecars.Cli/AppServiceSidecarsCli.csproj \
           --configuration Release \
