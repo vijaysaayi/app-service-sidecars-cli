@@ -21,7 +21,6 @@ chmod +x appservice-sidecars
 ### 1. `up`
 
 The `up` command is used to spin up all containers defined in sidecars.yaml configuration file.
-The `up` command is used to spin up all containers defined in sidecars.yaml configuration file.
 
 ```bash
 appservice-sidecars.exe up .\sidecars.yaml  --env .\.env
@@ -31,10 +30,9 @@ appservice-sidecars.exe up .\sidecars.yaml  --env .\.env
 
 ### 2. `down`
 
-The `down` command stops and removes the sidecars that were started using the `up` command.
+The `down` command stops and removes the sidecars created by appservice-sidecars cli.
 
 ```bash
-appservice-sidecars.exe down
 appservice-sidecars.exe down
 ```
 
@@ -43,10 +41,8 @@ appservice-sidecars.exe down
 ### 3. `logs`
 
 The `logs` command displays logs from the running sidecars.
-The `logs` command displays logs from the running sidecars.
 
 ```bash
-appservice-sidecars.exe logs <containerName>
 appservice-sidecars.exe logs <containerName>
 ```
 
@@ -64,7 +60,6 @@ appservice-sidecars.exe build .\sidecars.yaml  --env .\.env
 
 ## Configuration
 
-The CLI uses a `sidecars.yaml` file to define the sidecar configurations. 
 The CLI uses a `sidecars.yaml` file to define the sidecar configurations. 
 
 ### Example `sidecars.yaml`:
