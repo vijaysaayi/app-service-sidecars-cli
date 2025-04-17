@@ -2,7 +2,10 @@
 
 ## Overview
 
-The AppService Sidecars CLI provides a seamless local developer experience for managing AppService sidecars. It offers commands to build containers, spin them up, and tear them down. The tool is designed with simplicity in mind, keeping the schema of sidecars.yaml closely aligned with docker-compose.yaml—while only incorporating features supported by App Services.
+The AppService Sidecars CLI provides a seamless local developer experience for managing AppService sidecars. 
+It offers commands to build containers, spin them up, and tear them down. 
+
+The tool is designed with simplicity in mind, keeping the schema of sidecars.yaml closely aligned with docker-compose.yaml—while only incorporating features supported by App Services.
 
 ## Installation Steps
 
