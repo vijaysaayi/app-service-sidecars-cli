@@ -59,13 +59,10 @@ public class DockerServiceTests : IDisposable
 
         await _dockerService.RunContainerAsync(runCommandParams, CancellationToken.None);
 
-        var logsCommandParams = new DockerLogsCommandParams
-        {
-            ContainerName = containerName
-        };
+        var logsCommandParams = new DockerLogsCommandParams();
 
         // Act
-        var logs = await _dockerService.GetContainerLogsAsync(logsCommandParams, CancellationToken.None);
+        var logs = await _dockerService.GetContainerLogsAsync(containerName, logsCommandParams, CancellationToken.None);
 
         // Assert
         Assert.NotNull(logs);
