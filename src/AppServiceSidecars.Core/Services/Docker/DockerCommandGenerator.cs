@@ -89,9 +89,9 @@ public static class DockerCommandGenerator
         var args = new List<string>
         {
             "build",
-            $"--file {commandParams.DockerfilePath}",
+            $"--file \"{commandParams.DockerfilePath}\"",
             $"--tag {commandParams.ImageName}",
-            resolvedContext
+            $"\"{resolvedContext}\""
         };
 
         foreach (var arg in commandParams.BuildArgs)
